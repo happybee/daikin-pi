@@ -9,16 +9,21 @@ if [ $EUID != 0 ]; then
 fi
 
 apt update
+apt upgrade
 apt install \
   tmux \
   lirc \
   vim \
   -y
 
-wget -O - https://bootstrap.pypa.io/get-pip.py | python
-pip install virtualenv
-virtualenv ~/.venvs/daikin
-
+# Following changes for Bookworm compatibitlity
+if [cat /etc/os-release/ | grep -q "bookworm"]; then
+    python -m venv ~/.venvs/daikin
+else
+    wget -O - https://bootstrap.pypa.io/get-pip.py | python
+    pip install virtualenv
+    virtualenv ~/.venvs/daikin
+fi
 source ~/.venvs/daikin/bin/activate
 
 pip install -r ${SCRIPT_DIR}/requirements.txt
@@ -31,6 +36,7 @@ fi
 
 
 echo "-- Configuring LIRC"
+# update for bookworm changes
 if grep -q "lirc_dev" /etc/modules;
   then
     echo "lirc_dev" >> /etc/modules
